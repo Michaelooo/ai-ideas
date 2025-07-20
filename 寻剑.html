@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寻剑</title>
+    <style>
+        :root {
+            --primary-color: #34495e;
+            --secondary-color: #2c3e50;
+            --accent-color: #8e44ad;
+            --text-color: #333;
+            --light-bg: #f5f5f5;
+            --card-bg: #fff;
+            --border-color: #eee;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "SimSun", serif;
+            line-height: 1.8;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            position: relative;
+        }
+
+        .chapter {
+            background-color: var(--card-bg);
+            padding: 40px;
+            margin-bottom: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chapter::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--secondary-color);
+            font-size: 2em;
+            margin-bottom: 1em;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5em;
+            position: relative;
+        }
+
+        h1.main-title {
+            font-size: 3em;
+            color: var(--primary-color);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1.5em;
+            border: none;
+            padding: 20px 0;
+        }
+
+        h1.main-title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        }
+
+        p {
+            text-indent: 2em;
+            margin-bottom: 1em;
+            line-height: 1.9;
+        }
+
+        .dialog {
+            color: #444;
+            font-weight: 500;
+        }
+
+        .ink-wash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.05;
+            z-index: -1;
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxwYXR0ZXJuIGlkPSJwYXR0ZXJuIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxwYXRoIGQ9Ik0wIDAgTDQwIDQwIE0wIDQwIEw0MCAwIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMC41Ii8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI3BhdHRlcm4pIi8+PC9zdmc+');
+        }
+
+        .chapter-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            margin: 20px 0;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+
+        .chapter-image:hover {
+            opacity: 1;
+        }
+
+        .chapter-decoration {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 100px;
+            height: 100px;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        .chapter-number {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.2em;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .quote {
+            font-style: italic;
+            color: #555;
+            border-left: 3px solid var(--accent-color);
+            padding-left: 1em;
+            margin: 1.5em 0;
+        }
+
+        .ending {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 2em;
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .chapter {
+                padding: 20px;
+            }
+            h1.main-title {
+                font-size: 2em;
+            }
+        }
+
+        .ink-decoration {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .ink-top-right {
+            top: 20px;
+            right: 20px;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBkPSJNMTAgOTBDMzAgNzAgNTAgNTAgOTAgMTBDOTUgNSA5OSAxIDk5IDFDOTkgMSA5NSA1IDkwIDEwQzUwIDUwIDMwIDcwIDEwIDkwWiIgZmlsbD0iIzMzMyIvPjwvc3ZnPg==');
+        }
+
+        .ink-bottom-left {
+            bottom: 20px;
+            left: 20px;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cGF0aCBkPSJNOTAgMTBDNzAgMzAgNTAgNTAgMTAgOTBDNSA5NSAxIDk5IDEgOTlDMSA5OSA1IDk1IDEwIDkwQzUwIDUwIDcwIDMwIDkwIDEwWiIgZmlsbD0iIzMzMyIvPjwvc3ZnPg==');
+        }
+
+        .chapter-nav {
+            position: sticky;
+            top: 20px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 100;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .chapter-nav::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .chapter-nav::-webkit-scrollbar-track {
+            background: var(--light-bg);
+            border-radius: 3px;
+        }
+
+        .chapter-nav::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 3px;
+        }
+
+        .chapter-nav ul {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-wrap: nowrap;
+        }
+
+        .chapter-nav a {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            margin: 0 4px;
+            white-space: nowrap;
+            display: block;
+        }
+
+        .chapter-nav a:hover {
+            background-color: var(--light-bg);
+            color: var(--accent-color);
+        }
+
+        /* 右下角工具按钮 */
+        .floating-tools {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .tool-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .tool-btn:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+
+        .toc-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            z-index: 1001;
+            max-width: 400px;
+            max-height: 70vh;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .toc-popup.show {
+            display: block;
+        }
+
+        .toc-popup h3 {
+            margin: 0 0 15px 0;
+            color: var(--secondary-color);
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .toc-popup ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-popup li {
+            margin: 8px 0;
+        }
+
+        .toc-popup a {
+            text-decoration: none;
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: block;
+            transition: all 0.3s ease;
+        }
+
+        .toc-popup a:hover {
+            background-color: var(--light-bg);
+            color: var(--accent-color);
+        }
+
+        .toc-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: none;
+        }
+
+        .toc-overlay.show {
+            display: block;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .floating-tools {
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .tool-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 16px;
+            }
+            
+            .toc-popup {
+                max-width: 90vw;
+                max-height: 80vh;
+            }
+        }
+
+        /* 代码高亮样式 */
+        .highlight {
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 1em;
+            margin: 1em 0;
+            overflow-x: auto;
+        }
+
+        pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        blockquote {
+            border-left: 3px solid var(--accent-color);
+            padding-left: 1em;
+            margin: 1.5em 0;
+            font-style: italic;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="ink-wash"></div>
+    <h1 class="main-title">寻剑</h1>
+    
+    
+    <nav class="chapter-nav">
+        <ul>
+            <li><a href="#chapter1">第一章：湖边相遇</a></li>
+<li><a href="#chapter2">第二章：寻剑之谜</a></li>
+<li><a href="#chapter3">第三章：司空的阴谋</a></li>
+<li><a href="#chapter4">第四章：生死决择</a></li>
+        </ul>
+    </nav>
+    
+
+    
+    <div id="chapter1" class="chapter">
+        <div class="chapter-number">壹</div>
+        <div class="ink-decoration ink-top-right"></div>
+        <h1 id="_1">第一章：湖边相遇</h1>
+<p>秋风萧瑟，枫叶如血。</p>
+<p>镜湖如一面古铜镜，映着远山如黛，近水如烟。湖心有一叶扁舟，舟上坐着一个白衣如雪的人。</p>
+<p>他坐得很直，很静，像是一尊雕像。</p>
+<p>陆小凤远远望去，心中忽然生出一种说不出的感觉。那种感觉就像是在看一个即将离开这个世界的人。</p>
+<p>他踏着湖岸的青石，一步步走向那个白衣人。</p>
+<p>"西门吹雪。"</p>
+<p>白衣人没有回头，声音却清清楚楚地传了过来："你来了。"</p>
+<p>"是的，我来了。"陆小凤在他身边坐下，"你在此地做什么？"</p>
+<p>"找剑。"</p>
+<p>"一把剑，为什么要找？"</p>
+<p>"很值钱。"</p>
+<p>西门吹雪的声音很平静，平静得就像在说今天的天气如何。但陆小凤却听出了一丝异样。</p>
+<p>"有多值钱？"</p>
+<p>"江湖百名，皆死于此剑。"</p>
+<p>陆小凤的眉头皱了起来。江湖上能够杀死百名高手的剑，绝不是凡品。更何况，以西门吹雪的身份地位，什么样的宝剑得不到？</p>
+<p>"那你是想要钱？"</p>
+<p>"不，想要剑。"</p>
+<p>"寻到了做什么？"</p>
+<p>西门吹雪忽然转过头来，看着陆小凤。那双眼睛很黑，很深，就像这湖水一样深不见底。</p>
+<p>"杀人。"</p>
+<p>"杀谁？"</p>
+<p>"我。"</p>
+<p>这两个字，轻得像一片羽毛，却重得压在陆小凤心上，让他几乎喘不过气来。</p>
+<p>湖水依然平静，远山依然如黛，可是整个世界在这一刻仿佛都变了。</p>
+<p>陆小凤愣了很久，才问："为什么？"</p>
+<p>"因为这世上再也没有值得我挥剑的人了。"西门吹雪又转过头去，望着湖心，"我的剑已经太孤独了。"</p>
+<p>"所以你要死？"</p>
+<p>"所以我要找到那把剑。只有那样的剑，才配杀死我。"</p>
+<p>陆小凤忽然觉得很冷，那种冷不是来自秋风，而是来自内心深处。</p>
+<p>"你知道那把剑在哪里吗？"</p>
+<p>"知道。"</p>
+<p>"在哪里？"</p>
+<p>"司空摘星那里。"</p>
+<p>陆小凤的脸色变了。</p>
+<p>"你知道他在哪里？"</p>
+<p>"不知道。"西门吹雪看了他一眼，"但是你知道。"</p>
+<p>陆小凤没有说话。</p>
+<p>"剑是司空拿走的，我让的。"</p>
+<p>西门吹雪的声音更加平静了："那我理应杀你。"</p>
+<p>"没错。"陆小凤点了点头，"不过先得寻剑。"</p>
+<p>"是。"</p>
+<p>"我陪你找。"</p>
+<p>西门吹雪看了他一眼，眼中闪过一丝什么，但很快就消失了。</p>
+<p>"好。"</p>
+<p>湖上起了风，吹动了西门吹雪的白衣，也吹动了陆小凤的心。</p>
+<p>他们一起坐在湖边，两个最好的朋友，却也许很快就要成为敌人。</p>
+<p>这世上的事，有时候就是这么奇怪。</p>
+        <div class="ink-decoration ink-bottom-left"></div>
+    </div>
+    
+
+    <div id="chapter2" class="chapter">
+        <div class="chapter-number">贰</div>
+        <div class="ink-decoration ink-top-right"></div>
+        <h1 id="_1">第二章：寻剑之谜</h1>
+<p>离开镜湖后，两人一路无话。</p>
+<p>陆小凤走在前面，西门吹雪跟在后面，就像两个陌生人。</p>
+<p>"那把剑，叫什么名字？"陆小凤忽然问。</p>
+<p>"断魂。"</p>
+<p>"断魂？"陆小凤脚步一顿，"就是那把传说中的断魂剑？"</p>
+<p>"就是。"</p>
+<p>陆小凤的脸色更加凝重了。断魂剑，江湖传说中的绝世凶器，据说是用九天玄铁打造，历经七七四十九天才铸成。剑成之日，天地变色，雷电交加。</p>
+<p>更传说这把剑有灵性，会自己选择主人。而它选择的每一个主人，最终都会死在它的剑下。</p>
+<p>"为什么是这把剑？"</p>
+<p>"因为只有它，才能杀死我。"西门吹雪的声音依然平静，"我的剑道已经臻至化境，普通的剑奈何不了我。"</p>
+<p>"可是断魂剑的前一百个主人，都死了。"</p>
+<p>"我知道。"</p>
+<p>"你真的想死？"</p>
+<p>西门吹雪没有回答，他停下脚步，看着远处的夕阳。那轮血红的太阳正在慢慢沉下去，就像一个武者的生命即将走到尽头。</p>
+<p>"告诉我，你为什么要把剑让给司空？"</p>
+<p>陆小凤沉默了很久，才说："因为我欠他一个人情。"</p>
+<p>"什么人情？"</p>
+<p>"三年前，花满楼被人下毒，生命垂危。只有司空知道解药在哪里。"</p>
+<p>"所以你把断魂剑给了他？"</p>
+<p>"我答应帮他得到一样东西。没想到他要的是断魂剑。"</p>
+<p>西门吹雪看了他一眼："你后悔吗？"</p>
+<p>"不后悔。"陆小凤摇头，"为了朋友，我什么都可以做。包括现在陪你去找司空。"</p>
+<p>"即使你知道我找到剑后，可能会先杀了你？"</p>
+<p>"即使。"</p>
+<p>两人又开始往前走。天色渐暗，远山如黑色的屏风，把最后一抹夕阳遮住了。</p>
+<p>"司空现在在哪里？"</p>
+<p>"京城。"陆小凤说，"他在京城开了一家当铺。"</p>
+<p>"当铺？"西门吹雪微微一笑，"司空摘星开当铺，这倒是有趣。"</p>
+<p>"他说要做正当生意，洗心革面。"</p>
+<p>"你信吗？"</p>
+<p>"不信。"陆小凤如实说道，"司空摘星如果真能洗心革面，太阳就要从西边出来了。"</p>
+<p>"那他要断魂剑做什么？"</p>
+<p>"我也想知道。"陆小凤皱眉，"一个改邪归正的人，要那样的凶器做什么？"</p>
+<p>夜色降临，两人找了一家客栈住下。</p>
+<p>深夜，陆小凤睡不着。他起来走到窗前，看着外面的星空。</p>
+<p>"睡不着？"西门吹雪的声音从黑暗中传来。</p>
+<p>"在想事情。"</p>
+<p>"想什么？"</p>
+<p>"想你为什么非要死。"陆小凤转过身，看着黑暗中的西门吹雪，"你的剑道已经天下无敌，你还年轻，你有那么多值得活下去的理由。"</p>
+<p>"你错了。"西门吹雪说，"正因为我的剑道天下无敌，所以我必须死。"</p>
+<p>"为什么？"</p>
+<p>"因为一个没有对手的剑客，就像一个没有观众的演员，活着还有什么意思？"</p>
+<p>陆小凤忽然明白了什么："所以你要找断魂剑，因为只有它能做你的对手？"</p>
+<p>"不，"西门吹雪摇头，"断魂剑不是我的对手，它是我的归宿。"</p>
+<p>"区别在哪里？"</p>
+<p>"对手可以被战胜，归宿却不能。"</p>
+<p>陆小凤沉默了。他忽然觉得自己从来没有真正理解过这个朋友。</p>
+<p>窗外的风很凉，吹进来，吹在两个人身上。</p>
+<p>一个想死，一个想救。</p>
+<p>这世上最痛苦的事，莫过于此。</p>
+<p>"明天我们就到京城了。"陆小凤说。</p>
+<p>"嗯。"</p>
+<p>"你准备好了吗？"</p>
+<p>"我随时都准备好了。"西门吹雪说，"从我成为西门吹雪的那一天起，我就准备好了。"</p>
+<p>夜深了，两人都不再说话。</p>
+<p>但谁都没有睡着。</p>
+        <div class="ink-decoration ink-bottom-left"></div>
+    </div>
+    
+
+    <div id="chapter3" class="chapter">
+        <div class="chapter-number">叁</div>
+        <div class="ink-decoration ink-top-right"></div>
+        <h1 id="_1">第三章：司空的阴谋</h1>
+<p>京城繁华依旧，人流如织。</p>
+<p>在城东最热闹的街道上，有一家名为"摘星阁"的当铺。当铺不大，但装修精致，门口挂着一块黑底金字的招牌。</p>
+<p>陆小凤和西门吹雪站在当铺对面的茶楼上，观察着那里的一举一动。</p>
+<p>"看起来真的像在做正当生意。"陆小凤说。</p>
+<p>"太像了。"西门吹雪说，"像得让人怀疑。"</p>
+<p>正说着，一个身材矮小、相貌猥琐但双眼精光闪闪的男子从当铺里走了出来。他穿着一身绸缎长袍，头戴瓜皮帽，看起来像个富商。</p>
+<p>司空摘星。</p>
+<p>"我们下去吧。"陆小凤起身。</p>
+<p>"等等。"西门吹雪拉住了他，"你看那边。"</p>
+<p>陆小凤顺着他的目光看去，只见街角处站着一个黑衣人，正紧紧盯着司空摘星。而在另一个方向，还有两个灰衣人也在暗中观察。</p>
+<p>"看来司空的处境并不安全。"陆小凤皱眉。</p>
+<p>"或者，他在等什么人。"</p>
+<p>两人继续观察，不一会儿，又有几个可疑的人出现在不同的位置，都在暗中监视着摘星阁。</p>
+<p>"这不像是要对付司空，"西门吹雪说，"更像是在等猎物上钩。"</p>
+<p>陆小凤脸色一变："你是说，司空在设局？"</p>
+<p>"很有可能。"</p>
+<p>"局是针对谁的？"</p>
+<p>西门吹雪看了他一眼，没有说话，但陆小凤已经明白了。</p>
+<p>"针对我们？"</p>
+<p>"针对我。"西门吹雪纠正道，"准确地说，是针对想要断魂剑的人。"</p>
+<p>陆小凤想了想，觉得有道理。以司空摘星的聪明，他不可能不知道断魂剑会引来什么样的人。</p>
+<p>"那我们还下去吗？"</p>
+<p>"当然。"西门吹雪站起身，"既然是为我设的局，我没有理由不去。"</p>
+<p>两人下了茶楼，径直走向摘星阁。</p>
+<p>刚一进门，司空摘星就笑眯眯地迎了上来："哎呀，陆兄，西门兄，你们来了。"</p>
+<p>"你在等我们？"陆小凤问。</p>
+<p>"当然，我算准了你们今天会来。"司空摘星请他们到后堂坐下，"茶已经准备好了。"</p>
+<p>"断魂剑呢？"西门吹雪开门见山。</p>
+<p>"在我这里。"司空摘星点头，"不过，西门兄，我很好奇，你要这把剑做什么？"</p>
+<p>"杀人。"</p>
+<p>"杀谁？"</p>
+<p>"我自己。"</p>
+<p>司空摘星愣了一下，然后哈哈大笑："西门兄真会开玩笑。"</p>
+<p>"我从不开玩笑。"</p>
+<p>司空摘星的笑容渐渐消失了，他仔细看着西门吹雪的眼睛，半晌才说："你是认真的？"</p>
+<p>"我是认真的。"</p>
+<p>"为什么？"</p>
+<p>"这个理由，我只对陆小凤说过。"</p>
+<p>司空摘星看了看陆小凤，又看了看西门吹雪，忽然叹了口气："我明白了。"</p>
+<p>"你明白什么？"</p>
+<p>"我明白为什么那个人要我把断魂剑给你了。"</p>
+<p>陆小凤和西门吹雪同时一惊："什么人？"</p>
+<p>"一个很奇怪的人。"司空摘星说，"三天前，他来找我，说西门吹雪会来要断魂剑，让我一定要给他。"</p>
+<p>"他是谁？"</p>
+<p>"不知道。"司空摘星摇头，"他戴着面具，看不清脸。但他知道很多事，包括陆兄你为什么要把剑让给我。"</p>
+<p>"他还说了什么？"陆小凤的声音有些紧张。</p>
+<p>"他说，西门吹雪要断魂剑，不是为了杀别人，而是为了杀自己。他还说，这是西门吹雪唯一的出路。"</p>
+<p>西门吹雪的脸色变了："他怎么知道？"</p>
+<p>"我也想知道。"司空摘星说，"但更奇怪的是，他给了我一样东西，说如果西门吹雪真的要用断魂剑自杀，就把这个给他。"</p>
+<p>"什么东西？"</p>
+<p>司空摘星从怀里掏出一封信："这个。"</p>
+<p>西门吹雪接过信，拆开一看，脸色顿时变得煞白。</p>
+<p>"怎么了？"陆小凤问。</p>
+<p>西门吹雪没有说话，只是把信递给了陆小凤。</p>
+<p>陆小凤看了一眼，也愣住了。</p>
+<p>信上只有一句话："如果你真的想死，就来万剑冢找我。——你的师父。"</p>
+<p>"你师父不是已经……"陆小凤话说了一半，停住了。</p>
+<p>"已经死了二十年。"西门吹雪说，"但这确实是他的字迹。"</p>
+<p>屋子里忽然变得很安静，只能听到三个人的呼吸声。</p>
+<p>过了很久，西门吹雪才说："看来，有人不想让我这么容易就死。"</p>
+<p>"所以你还要断魂剑吗？"司空摘星问。</p>
+<p>西门吹雪想了想："要。但我要先去一个地方。"</p>
+<p>"万剑冢？"</p>
+<p>"万剑冢。"</p>
+<p>外面忽然传来一阵脚步声，很轻，但很急。</p>
+<p>"有人来了。"陆小凤说。</p>
+<p>"我知道。"司空摘星微笑，"他们等了三天，终于等到正主了。"</p>
+        <div class="ink-decoration ink-bottom-left"></div>
+    </div>
+    
+
+    <div id="chapter4" class="chapter">
+        <div class="chapter-number">肆</div>
+        <div class="ink-decoration ink-top-right"></div>
+        <h1 id="_1">第四章：生死决择</h1>
+<p>万剑冢位于京城西北的荒山之中，传说这里埋葬着天下所有的名剑。</p>
+<p>月黑风高，三个人策马来到万剑冢前。</p>
+<p>这是一个很奇怪的地方，没有坟墓，只有一座座剑型的石碑，在月光下闪着冷光。</p>
+<p>"你师父真的会在这里吗？"陆小凤问。</p>
+<p>"不知道。"西门吹雪下了马，"但我必须来看看。"</p>
+<p>司空摘星抱着断魂剑，跟在他们后面。这把剑用黑布包着，但仍能感受到其中散发出的森森杀气。</p>
+<p>"西门吹雪。"</p>
+<p>一个声音忽然在夜风中响起，苍老但威严。</p>
+<p>三人同时一惊，循声望去，只见一个白发苍苍的老人从石碑后面走出来。他穿着一身朴素的青衫，脸上布满皱纹，但那双眼睛依然明亮如星。</p>
+<p>"师父？"西门吹雪的声音有些颤抖。</p>
+<p>"是我。"老人点头，"二十年了，你长大了。"</p>
+<p>"你不是已经……"</p>
+<p>"死了？"老人笑了，"我确实死了，在你面前死的。但我也活着，活在这里等你。"</p>
+<p>陆小凤觉得有些糊涂："这是怎么回事？"</p>
+<p>"很简单。"老人看了他一眼，"二十年前，我知道自己时日无多，但我也知道我的弟子总有一天会走到今天这一步。"</p>
+<p>"什么意思？"</p>
+<p>"以西门吹雪的天赋，他注定会成为天下第一剑客。但当一个剑客没有对手的时候，他就会想到死。"</p>
+<p>西门吹雪默默地听着，没有说话。</p>
+<p>"所以我安排了一个局，一个延续了二十年的局。"老人继续说，"我假死，然后隐居在这里，等着你来找我。"</p>
+<p>"为什么？"</p>
+<p>"因为我要告诉你一件事。"老人走近西门吹雪，"你想死，不是因为没有对手，而是因为你还没有找到真正的对手。"</p>
+<p>"真正的对手？"西门吹雪皱眉，"谁？"</p>
+<p>"你自己。"</p>
+<p>这两个字，像惊雷一般在西门吹雪心中炸响。</p>
+<p>"最强的剑客，最大的敌人，永远是自己。"老人说，"战胜天下所有人都容易，战胜自己才难。"</p>
+<p>"那断魂剑呢？"</p>
+<p>"断魂剑是一个工具，一个让你看清自己的工具。"老人指着司空摘星手中的剑，"你以为它能杀死你，但其实，只有你自己能杀死你。"</p>
+<p>司空摘星忽然解开黑布，露出了断魂剑的真面目。</p>
+<p>那不是一把剑，而是一面镜子。</p>
+<p>一面剑型的镜子。</p>
+<p>"这……"陆小凤瞪大了眼睛。</p>
+<p>"断魂剑从来就不是一把真正的剑。"老人说，"它是一面镜子，让人看到自己内心深处的恐惧和绝望。那些死在'断魂剑'下的人，其实都是死在自己的内心恶魔手中。"</p>
+<p>西门吹雪慢慢走向那面镜子，看着镜中的自己。</p>
+<p>镜中的他，眼中没有了杀气，没有了孤独，只有平静。</p>
+<p>"现在你明白了吗？"老人问，"你的对手一直都在这里，在你心中。"</p>
+<p>西门吹雪看了很久，忽然笑了。那是二十年来，他第一次真正的笑。</p>
+<p>"我明白了。"他说，"我一直在找的，不是死亡，而是生命的意义。"</p>
+<p>"那你现在找到了吗？"陆小凤问。</p>
+<p>"找到了。"西门吹雪转过身，看着他的朋友们，"意义就是，无论多么孤独，多么绝望，都要活下去。因为只有活着，才能继续寻找，继续战斗，继续成长。"</p>
+<p>"那这面镜子……"</p>
+<p>"留在这里吧。"西门吹雪说，"让它继续照出更多人内心的真相。"</p>
+<p>老人满意地点了点头："很好，我的弟子，你终于明白了什么叫做真正的剑道。"</p>
+<p>"师父，您……"</p>
+<p>"我该走了。"老人的身影开始变得模糊，"我在这里等了二十年，现在任务完成了。记住，真正的剑客，永远不会被任何东西打败，包括自己的绝望。"</p>
+<p>老人的身影越来越淡，最后完全消失了，就像从来没有出现过一样。</p>
+<p>只有那面镜子，依然静静地立在月光下。</p>
+<p>"我们回去吧。"西门吹雪说。</p>
+<p>"回哪里？"陆小凤问。</p>
+<p>"回到有朋友的地方。"西门吹雪看着他，"回到还有值得保护的人的地方。"</p>
+<p>三人策马离开万剑冢，消失在夜色中。</p>
+<p>从此以后，江湖上再也没有人见过断魂剑，但却有人看到，在某个月圆之夜，万剑冢中会出现一面神奇的镜子，照出观者内心最真实的自己。</p>
+<p>而西门吹雪，从那天起，虽然依然孤独，但却不再绝望。</p>
+<p>因为他知道，真正的强者，不是征服世界，而是征服自己。</p>
+<p>真正的剑道，不是杀死敌人，而是拯救自己。</p>
+<p>【全文完】</p>
+        <div class="ink-decoration ink-bottom-left"></div>
+    </div>
+    
+
+    <!-- 右下角工具按钮 -->
+    <div class="floating-tools">
+        <button class="tool-btn" id="tocBtn" title="目录">
+            <span>☰</span>
+        </button>
+        <button class="tool-btn" id="backToTopBtn" title="返回顶部">
+            <span>↑</span>
+        </button>
+    </div>
+
+    <!-- TOC弹窗遮罩层 -->
+    <div class="toc-overlay" id="tocOverlay"></div>
+    
+    <!-- TOC弹窗 -->
+    <div class="toc-popup" id="tocPopup">
+        <h3>目录</h3>
+        <ul id="tocList">
+            <li><a href="#chapter1">第一章：湖边相遇</a></li>
+<li><a href="#chapter2">第二章：寻剑之谜</a></li>
+<li><a href="#chapter3">第三章：司空的阴谋</a></li>
+<li><a href="#chapter4">第四章：生死决择</a></li>
+        </ul>
+    </div>
+
+    <script>
+        // 平滑滚动效果
+        document.querySelectorAll('.chapter-nav a, .toc-popup a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    // 如果是TOC链接，关闭TOC弹窗
+                    if (this.closest('.toc-popup')) {
+                        hideToc();
+                    }
+                }
+            });
+        });
+
+        // TOC相关功能
+        const tocBtn = document.getElementById('tocBtn');
+        const tocOverlay = document.getElementById('tocOverlay');
+        const tocPopup = document.getElementById('tocPopup');
+
+        function showToc() {
+            tocOverlay.classList.add('show');
+            tocPopup.classList.add('show');
+        }
+
+        function hideToc() {
+            tocOverlay.classList.remove('show');
+            tocPopup.classList.remove('show');
+        }
+
+        tocBtn.addEventListener('click', showToc);
+        tocOverlay.addEventListener('click', hideToc);
+
+        // ESC键关闭TOC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideToc();
+            }
+        });
+
+        // 返回顶部功能
+        const backToTopBtn = document.getElementById('backToTopBtn');
+        
+        backToTopBtn.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 滚动时显示/隐藏返回顶部按钮
+        window.addEventListener('scroll', function() {
+            if (window.pageYOffset > 300) {
+                backToTopBtn.style.opacity = '1';
+            } else {
+                backToTopBtn.style.opacity = '0.7';
+            }
+        });
+    </script>
+</body>
+</html>
